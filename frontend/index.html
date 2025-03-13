@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Application Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
+    <header>
+        <h1><i class="fas fa-briefcase"></i> Job Application Tracker</h1>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="card stats">
+                <h2>Your Applications</h2>
+                <div class="stats-container" id="stats-container">
+                    <div class="stat-item">
+                        <div class="stat-number" id="total-applications">0</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="applied-count">0</div>
+                        <div class="stat-label">Applied</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="interview-count">0</div>
+                        <div class="stat-label">Interview</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="offered-count">0</div>
+                        <div class="stat-label">Offered</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="rejected-count">0</div>
+                        <div class="stat-label">Rejected</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="new-application-btn" class="btn primary">
+                    <i class="fas fa-plus"></i> Add New Application
+                </button>
+                <div class="filter-controls">
+                    <label for="status-filter">Filter by Status:</label>
+                    <select id="status-filter" class="select">
+                        <option value="">All</option>
+                        <option value="Applied">Applied</option>
+                        <option value="Phone Screening">Phone Screening</option>
+                        <option value="Interview Scheduled">Interview Scheduled</option>
+                        <option value="Interview Completed">Interview Completed</option>
+                        <option value="Offered">Offered</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Hired">Hired</option>
+                        <option value="Declined">Declined</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="applications-container" class="applications-container">
+                <!-- Applications will be loaded here -->
+                <div class="empty-state" id="empty-state">
+                    <i class="fas fa-file-alt empty-icon"></i>
+                    <p>No applications yet. Start by adding your first job application!</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add/Edit Application Modal -->
+    <div id="application-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Add New Application</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="application-form">
+                <input type="hidden" id="application-id">
+                <div class="form-group">
+                    <label for="company">Company Name <span class="required">*</span></label>
+                    <input type="text" id="company" name="company" required>
+                </div>
+                <div class="form-group">
+                    <label for="position">Position <span class="required">*</span></label>
+                    <input type="text" id="position" name="position" required>
+                </div>
+                <div class="form-group">
+                    <label for="date-applied">Date Applied <span class="required">*</span></label>
+                    <input type="date" id="date-applied" name="date-applied" required>
+                </div>
+                <div class="form-group">
+                    <label for="status">Status <span class="required">*</span></label>
+                    <select id="status" name="status" required>
+                        <option value="Applied">Applied</option>
+                        <option value="Phone Screening">Phone Screening</option>
+                        <option value="Interview Scheduled">Interview Scheduled</option>
+                        <option value="Interview Completed">Interview Completed</option>
+                        <option value="Offered">Offered</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Hired">Hired</option>
+                        <option value="Declined">Declined</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" name="notes" rows="3"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="cancel-btn" class="btn secondary">Cancel</button>
+                    <button type="submit" class="btn primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content confirm-modal">
+            <div class="modal-header">
+                <h2>Confirm Deletion</h2>
+                <span class="close">&times;</span>
+            </div>
+            <p>Are you sure you want to delete this application?</p>
+            <div class="form-actions">
+                <button type="button" id="confirm-cancel-btn" class="btn secondary">Cancel</button>
+                <button type="button" id="confirm-delete-btn" class="btn danger">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
