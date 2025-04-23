@@ -12,6 +12,14 @@ Filter by Status: Allows users to sort applications based on their current stage
 
 User-Friendly Interface: Clean and simple design for ease of use.
 
+## How to Start
+
+cd .\backend\
+python -m venv venv
+.\venv\Scripts\activate
+pip install -r requirements.txt
+python main.py
+
 ## Future Improvements
 
 Implement applying directly from the site.
