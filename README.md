@@ -15,9 +15,13 @@ User-Friendly Interface: Clean and simple design for ease of use.
 ## How to Start
 
 cd .\backend\
+
 python -m venv venv
+
 .\venv\Scripts\activate
+
 pip install -r requirements.txt
+
 python main.py
 
 ## Future Improvements
