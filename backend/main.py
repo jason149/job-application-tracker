@@ -27,7 +27,7 @@ app.add_middleware(
 # MongoDB Connection
 MONGO_URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017/jobapp_tracker")
 client = MongoClient(MONGO_URI)
-db = client.jobapp_tracker
+db = client.job_tracker
 users_collection = db.users
 applications_collection = db.applications
 
