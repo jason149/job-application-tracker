@@ -33,45 +33,137 @@ const rejectedCountEl = document.getElementById('rejected-count');
 let applications = [];
 let currentApplicationId = null;
 
-// Event Listeners
-document.addEventListener('DOMContentLoaded', fetchApplications);
-newApplicationBtn.addEventListener('click', openNewApplicationModal);
-cancelBtn.addEventListener('click', closeModal);
-applicationForm.addEventListener('submit', saveApplication);
-statusFilter.addEventListener('change', filterApplications);
-confirmDeleteBtn.addEventListener('click', deleteApplication);
-confirmCancelBtn.addEventListener('click', closeConfirmModal);
-
-// Close modals when clicking on X or outside
-document.querySelectorAll('.close').forEach(closeBtn => {
-    closeBtn.addEventListener('click', function() {
-        applicationModal.style.display = 'none';
-        confirmModal.style.display = 'none';
+// Check auth status
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if user is logged in
+    fetch(`${API_URL}/me`, {
+        credentials: 'include'
+    })
+    .then(response => {
+        if (!response.ok) {
+            window.location.href = 'login.html';
+            return;
+        }
+        // User is logged in, initialize app
+        initializeApp();
+    })
+    .catch(error => {
+        console.error('Auth check failed:', error);
+        window.location.href = 'login.html';
     });
+    
+    // Add logout button
+    const header = document.querySelector('header');
+    if (header) {
+        const logoutBtn = document.createElement('button');
+        logoutBtn.className = 'btn logout-btn';
+        logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout';
+        logoutBtn.addEventListener('click', logout);
+        header.appendChild(logoutBtn);
+        
+        // Add style for logout button
+        const style = document.createElement('style');
+        style.textContent = `
+            .logout-btn {
+                background-color: transparent;
+                color: white;
+                border: 1px solid rgba(255, 255, 255, 0.5);
+                padding: 0.4rem 0.8rem;
+                border-radius: 4px;
+                cursor: pointer;
+                font-weight: 500;
+                transition: all 0.3s ease;
+                margin-left: auto;
+            }
+            .logout-btn:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+            header {
+                display: flex;
+                align-items: center;
+            }
+        `;
+        document.head.appendChild(style);
+    }
 });
 
-window.addEventListener('click', function(event) {
-    if (event.target === applicationModal) {
-        applicationModal.style.display = 'none';
+// Logout function
+function logout() {
+    fetch(`${API_URL}/logout`, {
+        method: 'POST',
+        credentials: 'include'
+    })
+    .then(() => {
+        window.location.href = 'login.html';
+    })
+    .catch(error => {
+        console.error('Logout failed:', error);
+    });
+}
+
+// Initialize application after authentication
+function initializeApp() {
+    // Event Listeners
+    if (newApplicationBtn) {
+        newApplicationBtn.addEventListener('click', openNewApplicationModal);
     }
-    if (event.target === confirmModal) {
-        confirmModal.style.display = 'none';
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeModal);
     }
-});
+    if (applicationForm) {
+        applicationForm.addEventListener('submit', saveApplication);
+    }
+    if (statusFilter) {
+        statusFilter.addEventListener('change', filterApplications);
+    }
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', deleteApplication);
+    }
+    if (confirmCancelBtn) {
+        confirmCancelBtn.addEventListener('click', closeConfirmModal);
+    }
+
+    // Close modals when clicking on X or outside
+    document.querySelectorAll('.close').forEach(closeBtn => {
+        closeBtn.addEventListener('click', function() {
+            applicationModal.style.display = 'none';
+            confirmModal.style.display = 'none';
+        });
+    });
+
+    window.addEventListener('click', function(event) {
+        if (event.target === applicationModal) {
+            applicationModal.style.display = 'none';
+        }
+        if (event.target === confirmModal) {
+            confirmModal.style.display = 'none';
+        }
+    });
+    
+    // Fetch applications on load
+    fetchApplications();
+}
 
 // Fetch applications from API
 async function fetchApplications() {
     try {
-        const statusFilter = document.getElementById('status-filter').value;
+        const statusFilterValue = document.getElementById('status-filter').value;
         let url = `${API_URL}/applications/`;
         
-        if (statusFilter) {
-            url += `?status=${statusFilter}`;
+        if (statusFilterValue) {
+            url += `?status=${statusFilterValue}`;
         }
         
-        const response = await fetch(url);
+        const response = await fetch(url, {
+            credentials: 'include'  // Include credentials for authentication
+        });
         
         if (!response.ok) {
+            if (response.status === 401) {
+                // Unauthorized, redirect to login
+                window.location.href = 'login.html';
+                return;
+            }
             throw new Error('Failed to fetch applications');
         }
         
@@ -88,7 +180,9 @@ async function fetchApplications() {
 // Fetch statistics
 async function fetchStatistics() {
     try {
-        const response = await fetch(`${API_URL}/statistics/`);
+        const response = await fetch(`${API_URL}/statistics/`, {
+            credentials: 'include'  // Include credentials for authentication
+        });
         
         if (!response.ok) {
             throw new Error('Failed to fetch statistics');
@@ -104,6 +198,8 @@ async function fetchStatistics() {
 
 // Update statistics display
 function updateStatistics(stats) {
+    if (!totalApplicationsEl) return;
+    
     totalApplicationsEl.textContent = stats.total_applications;
     
     // Initialize counters
@@ -116,7 +212,7 @@ function updateStatistics(stats) {
     for (const [status, count] of Object.entries(stats.status_counts)) {
         if (status.toLowerCase() === 'applied') {
             appliedCount = count;
-        } else if (status.toLowerCase().includes('interview')) {
+        } else if (status.toLowerCase().includes('interview') || status.toLowerCase().includes('phone')) {
             interviewCount += count;
         } else if (status.toLowerCase() === 'offered' || status.toLowerCase() === 'hired') {
             offeredCount += count;
@@ -134,6 +230,8 @@ function updateStatistics(stats) {
 
 // Render applications
 function renderApplications() {
+    if (!applicationsContainer) return;
+    
     // Clear applications container except for empty state
     const nodes = applicationsContainer.childNodes;
     for (let i = nodes.length - 1; i >= 0; i--) {
@@ -144,10 +242,10 @@ function renderApplications() {
     
     // Show/hide empty state
     if (applications.length === 0) {
-        emptyState.style.display = 'block';
+        if (emptyState) emptyState.style.display = 'block';
         return;
     } else {
-        emptyState.style.display = 'none';
+        if (emptyState) emptyState.style.display = 'none';
     }
     
     // Render each application
@@ -308,7 +406,8 @@ async function saveApplication(event) {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(application)
+                body: JSON.stringify(application),
+                credentials: 'include'  // Include credentials for authentication
             });
         } else {
             // Create new application
@@ -317,11 +416,17 @@ async function saveApplication(event) {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(application)
+                body: JSON.stringify(application),
+                credentials: 'include'  // Include credentials for authentication
             });
         }
         
         if (!response.ok) {
+            if (response.status === 401) {
+                // Unauthorized, redirect to login
+                window.location.href = 'login.html';
+                return;
+            }
             throw new Error('Failed to save application');
         }
         
@@ -343,10 +448,16 @@ async function deleteApplication() {
     
     try {
         const response = await fetch(`${API_URL}/applications/${currentApplicationId}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            credentials: 'include'  // Include credentials for authentication
         });
         
         if (!response.ok) {
+            if (response.status === 401) {
+                // Unauthorized, redirect to login
+                window.location.href = 'login.html';
+                return;
+            }
             throw new Error('Failed to delete application');
         }
         
